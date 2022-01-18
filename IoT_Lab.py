@@ -1,12 +1,15 @@
+from django.contrib.sites import requests
+
 print("Xin chào ThingsBoard")
 import paho.mqtt.client as mqttclient
 import time
 import json
+import requests
+from requests import get
 
 BROKER_ADDRESS = "demo.thingsboard.io"
 PORT = 1883
-THINGS_BOARD_ACCESS_TOKEN = ""
-
+THINGS_BOARD_ACCESS_TOKEN = "jsc3EqiuI10DZsvfj7oe"
 
 def subscribed(client, userdata, mid, granted_qos):
     print("Subscribed...")
@@ -44,12 +47,20 @@ client.on_message = recv_message
 
 temp = 30
 humi = 50
-light_intesity = 100
+light_intensity = 100
 counter = 0
+longitude = 0
+latitude = 0
+
 while True:
-    collect_data = {'temperature': temp, 'humidity': humi, 'light':light_intesity}
+    ip = get("http://api.ipify.org").text
+    print(ip)
+    response = requests.get("http://ip-api.com/json/" + ip).json()
+    collect_data = {'temperature': temp, 'humidity': humi, 'light':light_intensity,'longitude':longitude,'latitude':latitude}
     temp += 1
     humi += 1
-    light_intesity += 1
+    light_intensity += 1
+    longitude = response['lon']
+    latitude = response['lat']
     client.publish('v1/devices/me/telemetry', json.dumps(collect_data), 1)
-    time.sleep(5)
+    time.sleep(10)
